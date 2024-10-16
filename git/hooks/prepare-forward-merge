@@ -4,11 +4,16 @@ require 'net/http'
 require 'yaml'
 require 'logger'
 
+# Main branch for forward merges
 $main_branch = "3.4.x"
 
+# Initialize logger
 $log = Logger.new(STDOUT)
 $log.level = Logger::WARN
 
+# Get fixed issues from the merge commit message
+# @return [Array<String>] List of fixed issues
+# @return [nil] if no fixed issues are found
 def get_fixed_issues()
   $log.debug "Searching for forward merge"
   rev=`git rev-parse -q --verify MERGE_HEAD`.strip
@@ -24,6 +29,10 @@ def get_fixed_issues()
   return fixed;
 end
 
+# Rewrite the commit message to include fixed issues
+# @param message_file [String] Path to the commit message file
+# @param fixed [Array<String>] List of fixed issues
+# @return [String] Rewritten commit message
 def rewrite_message(message_file, fixed)
   current_branch = `git rev-parse --abbrev-ref HEAD`.strip
   if current_branch == "main"
@@ -55,6 +64,7 @@ def rewrite_message(message_file, fixed)
   return rewritten_message
 end
 
+# Main script execution
 $log.debug "Running prepare-forward-merge hook script"
 
 message_file=ARGV[0]
