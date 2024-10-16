@@ -4,9 +4,11 @@ require 'net/http'
 require 'yaml'
 require 'logger'
 
+# Initialize logger
 $log = Logger.new(STDOUT)
 $log.level = Logger::WARN
 
+# Class to represent a forward merge
 class ForwardMerge
   attr_reader :issue, :milestone, :message, :line
   def initialize(issue, milestone, message, line)
@@ -17,6 +19,10 @@ class ForwardMerge
   end
 end
 
+# Find forward merges in the commit message
+# @param message_file [String] Path to the commit message file
+# @return [Array<ForwardMerge>] List of forward merges found
+# @return [nil] if no forward merges are found
 def find_forward_merges(message_file)
   $log.debug "Searching for forward merge"
   rev=`git rev-parse -q --verify MERGE_HEAD`.strip
@@ -38,6 +44,13 @@ def find_forward_merges(message_file)
   return forward_merges
 end
 
+# Get issue details from GitHub
+# @param username [String] GitHub username
+# @param password [String] GitHub password
+# @param repository [String] GitHub repository name
+# @param number [Integer] Issue number
+# @return [Hash] Issue details
+# @exit [1] if the issue cannot be retrieved
 def get_issue(username, password, repository, number)
   $log.debug "Getting issue #{number} from GitHub repository #{repository}"
   uri = URI("https://api.github.com/repos/#{repository}/issues/#{number}")
@@ -52,6 +65,13 @@ def get_issue(username, password, repository, number)
   exit 1
 end
 
+# Find milestone by title
+# @param username [String] GitHub username
+# @param password [String] GitHub password
+# @param repository [String] GitHub repository name
+# @param title [String] Milestone title
+# @return [Integer] Milestone number
+# @exit [1] if the milestone cannot be found
 def find_milestone(username, password, repository, title)
   $log.debug "Finding milestone #{title} from GitHub repository #{repository}"
   uri = URI("https://api.github.com/repos/#{repository}/milestones")
@@ -83,6 +103,17 @@ def find_milestone(username, password, repository, title)
   exit 1
 end
 
+# Create a new issue on GitHub
+# @param username [String] GitHub username
+# @param password [String] GitHub password
+# @param repository [String] GitHub repository name
+# @param original [Integer] Original issue number
+# @param title [String] Issue title
+# @param labels [Array<String>] Issue labels
+# @param milestone [Integer] Milestone number
+# @param milestone_name [String] Milestone name
+# @param dry_run [Boolean] Dry run flag
+# @return [Integer] New issue number
 def create_issue(username, password, repository, original, title, labels, milestone, milestone_name, dry_run)
   $log.debug "Finding forward-merge issue in GitHub repository #{repository} for '#{title}'"
   uri = URI("https://api.github.com/repos/#{repository}/issues")
@@ -106,6 +137,7 @@ def create_issue(username, password, repository, original, title, labels, milest
   return response['number']
 end
 
+# Main script execution
 $log.debug "Running forward-merge hook script"
 message_file=ARGV[0]
 
@@ -118,6 +150,7 @@ username = config['github']['credentials']['username']
 password = config['github']['credentials']['password']
 dry_run = config['dry_run']
 
+# Determine the target repository based on build type
 gradleProperties = IO.read('gradle.properties')
 springBuildType = gradleProperties.match(/^spring\.build-type\s?=\s?(.*)$/)
 repository = (springBuildType && springBuildType[1] != 'oss') ? "spring-projects/spring-boot-#{springBuildType[1]}" : "spring-projects/spring-boot";
