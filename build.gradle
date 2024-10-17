@@ -25,8 +25,13 @@ subprojects {
 		}
 	}
 
+	// Ensure that changing modules are not cached to avoid stale dependencies
 	configurations.all {
 		resolutionStrategy.cacheChangingModulesFor 0, "minutes"
 	}
-}
 
+	// Define dependencies here if needed
+	// dependencies {
+	//     implementation 'group:name:version'
+	// }
+}
