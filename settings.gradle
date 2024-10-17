@@ -1,4 +1,5 @@
 pluginManagement {
+	// Apply Spring Repository Support for plugin management
 	evaluate(new File("${rootDir}/buildSrc/SpringRepositorySupport.groovy")).apply(this)
 	repositories {
 		mavenCentral()
@@ -37,6 +38,7 @@ settings.gradle.projectsLoaded {
 	}
 }
 
+// Include all subprojects
 include "spring-boot-project:spring-boot-dependencies"
 include "spring-boot-project:spring-boot-parent"
 include "spring-boot-project:spring-boot-tools:spring-boot-antlib"
