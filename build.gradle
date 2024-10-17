@@ -17,16 +17,18 @@ subprojects {
 	repositories {
 		mavenCentral()
 		spring.mavenRepositories()
+		// Use milestone repository for pre-release versions
 		if (version.contains('-')) {
 			maven { url "https://repo.spring.io/milestone" }
 		}
+		// Use snapshot repository for snapshot versions
 		if (version.endsWith('-SNAPSHOT')) {
 			maven { url "https://repo.spring.io/snapshot" }
 		}
 	}
 
 	configurations.all {
+		// Disable caching for changing modules
 		resolutionStrategy.cacheChangingModulesFor 0, "minutes"
 	}
 }
-
